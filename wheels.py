@@ -1,84 +1,85 @@
-import machine
+from machine import Pin, PWM
+from car_cfg import CarCfg
 
 
-class Wheels:
+class Car:
 
-    def __init__(self, machine):
-        self.machine = machine
-        self.FRONT_WHEELS_DIRECTION = machine.Pin(2, machine.Pin.OUT)
-        self.FRONT_PWM = machine.PWM(machine.Pin(4))
-        self.REAR_WHEELS_DIRECTION = machine.Pin(0, machine.Pin.OUT)
-        self.REAR_PWM = machine.PWM(machine.Pin(5))
-        self.FRONT_WHEELS_DIRECTION.value(0)
-        self.REAR_WHEELS_DIRECTION.value(0)
+    def __init__(self):
+        self.FRONT_DIRECTION = CarCfg.FRONT_DIRECTION
+        self.FRONT_PWM = CarCfg.FRONT_PWM
+        self.REAR_DIRECTION = CarCfg.REAR_DIRECTION
+        self.REAR_PWM = CarCfg.REAR_PWM
+        self.FREQ = CarCfg.PWM_FREQ
+        self.FRONT_DIRECTION.value(0)
+        self.REAR_DIRECTION.value(0)
         self.FRONT_PWM.duty(0)
         self.REAR_PWM.duty(0)
 
     def stop(self):
-        self.FRONT_WHEELS_DIRECTION.value(0)
-        self.REAR_WHEELS_DIRECTION.value(0)
+        self.FRONT_DIRECTION.value(0)
+        self.REAR_DIRECTION.value(0)
         self.FRONT_PWM.duty(0)
         self.REAR_PWM.duty(0)
 
-    def fwd(self, pwm_dc, freq=500):
+    def move_forward(self, pwm_dc):
         self.stop()
-        self.REAR_WHEELS_DIRECTION.value(0)
+        self.REAR_DIRECTION.value(0)
         self.REAR_PWM.duty(pwm_dc)
-        self.REAR_PWM.freq(freq)
+        self.REAR_PWM.freq(self.FREQ)
 
-    def rfwd(self, pwm_dc, freq=500):
+    def move_backward(self, pwm_dc):
         self.stop()
-        self.FRONT_WHEELS_DIRECTION.value(0)
-        self.FRONT_PWM.duty(pwm_dc)
-        self.FRONT_PWM.freq(freq)
-        self.REAR_WHEELS_DIRECTION.value(0)
+        self.REAR_DIRECTION.value(1)
         self.REAR_PWM.duty(pwm_dc)
-        self.REAR_PWM.freq(freq)
+        self.REAR_PWM.freq(self.FREQ)
 
-    def lfwd(self, pwm_dc, freq=500):
+    def move_left(self, pwm_dc):
         self.stop()
-        self.FRONT_WHEELS_DIRECTION.value(1)
+        self.FRONT_DIRECTION.value(0)
         self.FRONT_PWM.duty(pwm_dc)
-        self.FRONT_PWM.freq(freq)
-        self.REAR_WHEELS_DIRECTION.value(0)
+        self.FRONT_PWM.freq(self.FREQ)
+
+    def move_right(self, pwm_dc):
+        self.stop()
+        self.FRONT_DIRECTION.value(1)
+        self.FRONT_PWM.duty(pwm_dc)
+        self.FRONT_PWM.freq(self.FREQ)
+
+    def move_backward_right(self, pwm_dc):
+        self.stop()
+        self.FRONT_DIRECTION.value(0)
+        self.FRONT_PWM.duty(pwm_dc)
+        self.FRONT_PWM.freq(self.FREQ)
+        self.REAR_DIRECTION.value(1)
         self.REAR_PWM.duty(pwm_dc)
-        self.REAR_PWM.freq(freq)
+        self.REAR_PWM.freq(self.FREQ)
 
-    def bwd(self, pwm_dc, freq=500):
+    def move_forward_right(self, pwm_dc):
         self.stop()
-        self.REAR_WHEELS_DIRECTION.value(1)
+        self.FRONT_DIRECTION.value(0)
+        self.FRONT_PWM.duty(pwm_dc)
+        self.FRONT_PWM.freq(self.FREQ)
+        self.REAR_DIRECTION.value(0)
         self.REAR_PWM.duty(pwm_dc)
-        self.REAR_PWM.freq(freq)
+        self.REAR_PWM.freq(self.FREQ)
 
-    def rbwd(self, pwm_dc, freq=500):
+    def move_forward_left(self, pwm_dc):
         self.stop()
-        self.FRONT_WHEELS_DIRECTION.value(0)
+        self.FRONT_DIRECTION.value(1)
         self.FRONT_PWM.duty(pwm_dc)
-        self.FRONT_PWM.freq(freq)
-        self.REAR_WHEELS_DIRECTION.value(1)
+        self.FRONT_PWM.freq(self.FREQ)
+        self.REAR_DIRECTION.value(0)
         self.REAR_PWM.duty(pwm_dc)
-        self.REAR_PWM.freq(freq)
+        self.REAR_PWM.freq(self.FREQ)
 
-    def lft(self, pwm_dc, freq=500):
+    def move_backward_left(self, pwm_dc):
         self.stop()
-        self.FRONT_WHEELS_DIRECTION.value(0)
+        self.FRONT_DIRECTION.value(1)
         self.FRONT_PWM.duty(pwm_dc)
-        self.FRONT_PWM.freq(freq)
-
-    def rght(self, pwm_dc, freq=500):
-        self.stop()
-        self.FRONT_WHEELS_DIRECTION.value(1)
-        self.FRONT_PWM.duty(pwm_dc)
-        self.FRONT_PWM.freq(freq)
-
-    def lbwd(self, pwm_dc, freq=300):
-        self.stop()
-        self.FRONT_WHEELS_DIRECTION.value(1)
-        self.FRONT_PWM.duty(pwm_dc)
-        self.FRONT_PWM.freq(freq)
-        self.REAR_WHEELS_DIRECTION.value(1)
+        self.FRONT_PWM.freq(self.FREQ)
+        self.REAR_DIRECTION.value(1)
         self.REAR_PWM.duty(pwm_dc)
-        self.REAR_PWM.freq(freq)
+        self.REAR_PWM.freq(self.FREQ)
 
     def cleanup(self):
         self.stop()
