@@ -1,22 +1,39 @@
 import machine
 import usocket
 from time import sleep
-from wheels import Wheels
+from wheels import Car
+
+
+car = Car()
+
+
+def get_page():
+    with open('index.html', 'rb') as _page:
+        return _page.read()
+
+
+_car_cmd = {
+    "index.html": get_page,
+    "forward": car.forward,
+    "backward": car.backward,
+    "left": car.left,
+    "right": car.right,
+    "forward_right": car.forward_right,
+    "forward_left": car.forward_left,
+    "backward_right": car.backward_right,
+    "backward_left": car.backward_left,
+    "stop": car.stop,
+    "favicon.ico": car.skip,
+    "cleanup": car.cleanup
+}
 
 
 def get_header():
     return b"""HTTP/1.0 200 OK
     Content-Type: text/html; charset=utf-8
     Access-Control-Allow-Origin: *
-
-"""
-
-
-def get_page():
-    _page = open('index.html', 'rb')
-    cntx = _page.read()
-    _page.close()
-    return cntx
+    \r\n
+    """
 
 
 def snd_confirm(socket):
@@ -34,103 +51,68 @@ def err_msg(socket, err_code, er_msg):
 
 
 def handle(socket):
-    car = Wheels(machine)
     (method, url, version) = socket.readline().split(b" ")
-    if b"?" in url:
-        (path, query) = url.split(b"?", 2)
+    method = str(method.decode('utf-8'))
+    url = str(url.decode('utf-8'))
+    if "/" in url:
+        (path, query) = url.split("/", 1)
     else:
-        (path, query) = (url, b"")
+        (path, query) = (url, "")
     while True:
-        header = socket.readline()
-        if header == b"":
+        header = str(socket.readline().decode('utf-8'))
+        if header == "":
             return
-        if header == b"\r\n":
+        if header == "\r\n":
             break
-    if method == b"GET":
-        if path == b"/":
-            if query == b"":
-                print('Received request %s' % query)
-                print(get_page())
-                resp(socket)
-            elif query == b"index.html":
-                print(get_page())
-                resp(socket)
-            elif query == b"action=fwd":
-                print('Received request %s' % query)
-                snd_confirm(socket)
-                car.fwd(1000)
-                sleep(3)
-                car.stop()
-            elif query == b"action=lfwd":
-                print('Received request %s' % query)
-                snd_confirm(socket)
-                car.lfwd(1000)
-                sleep(3)
-                car.stop()
-            elif query == b"action=rfwd":
-                print('Received request %s' % query)
-                snd_confirm(socket)
-                car.rfwd(1000)
-                sleep(3)
-                car.stop()
-            elif query == b"action=bwd":
-                print('Received request %s' % query)
-                snd_confirm(socket)
-                car.bwd(1000)
-                sleep(3)
-                car.stop()
-            elif query == b"action=lbwd":
-                print('Received request %s' % query)
-                snd_confirm(socket)
-                car.lbwd(1000)
-                sleep(3)
-                car.stop()
-            elif query == b"action=rbwd":
-                print('Received request %s' % query)
-                snd_confirm(socket)
-                car.rbwd(1000)
-                sleep(3)
-                car.stop()
-            elif query == b"action=lft":
-                print('Received request %s' % query)
-                snd_confirm(socket)
-                car.lft(1000)
-                sleep(3)
-                car.stop()
-            elif query == b"action=rght":
-                print('Received request %s' % query)
-                snd_confirm(socket)
-                car.rght(1000)
-                sleep(3)
-                car.stop()
-            elif query == b"action=stop":
-                print('Received request %s' % query)
-                snd_confirm(socket)
-                car.stop()
-            elif query == b"action=cleanup":
-                print('Received request %s' % query)
-                car.cleanup()
-                snd_confirm(socket)
-        elif path == b"/favicon.ico":
-            pass
+    if method == "GET":
+        if path == "":
+            query = query.replace('?', '')
+            if '=' in query:
+                qry = query.split('=', 1)[0]
+                param = query.split('=', 1)[1]
+                if qry in _car_cmd:
+                    print('Received request %s' % qry)
+                    snd_confirm(socket)
+                    _car_cmd[qry](param)
+                    sleep(1)
+                    car.stop()
+                else:
+                    car.stop()
+                    err_msg(socket, "404", "Unknown command!")
+            else:
+                qry = query
+                if qry in _car_cmd:
+                    print('Received request %s' % qry)
+                    snd_confirm(socket)
+                    _car_cmd[qry]()
+                    sleep(1)
+                    car.stop()
+                else:
+                    car.stop()
+                    err_msg(socket, "404", "Unknown command!")
         else:
             car.stop()
             err_msg(socket, "404", "Unknown command!")
-    elif method == b"POST":
+    elif method == "POST":
         err_msg(socket, "501", "POST Not Implemented")
 
 
 def init_srv():
     server = usocket.socket()
-    server.bind(('', 80))
+    _port = 8989
+    server.bind(('', _port))
     server.listen(5)
-    print('Started local web server')
+    print('Starting local web server on: {}'.format(_port))
     while True:
+        (socket, sockaddr) = server.accept()
         try:
-            (socket, sockaddr) = server.accept()
             handle(socket)
+        except KeyboardInterrupt:
+            print("Terminating ...")
+            socket.close()
+            sys.exit()
         finally:
-            print('Close socket connection')
+            print('Close socket connection...')
             socket.close()
 
 
