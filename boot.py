@@ -15,18 +15,6 @@ _AP_SSID = "ESP_PLANT"
 _AP_PWD = "Nhfdrf_13"
 
 
-def check_time():
-    yr = int(utime.localtime()[0])
-    if yr != 2020:
-        try:
-            ntptime.settime()
-            print("Time updated")
-        except OSError:
-            print("NTP update time exception")
-        finally:
-            ntptime.settime()
-
-
 def start_sta():
     if not _STA.active():
         _STA.active(True)
@@ -43,7 +31,6 @@ def stop_ap():
     print("Successfully terminated WiFi AP mode")
 
 
-check_time()
 start_sta()
 stop_ap()
 print("Starting WebRepl ...")

@@ -8,3 +8,5 @@ class CarCfg:
     REAR_DIRECTION = Pin(0, Pin.OUT)
     REAR_PWM = PWM(Pin(5))
     PWM_FREQ = 500
+
+
