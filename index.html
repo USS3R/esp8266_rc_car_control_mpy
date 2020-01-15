@@ -5,10 +5,10 @@
 
 	<head>
 		<script language="JavaScript" type="text/javascript ">
-			var ADDR = "http://192.168.0.112/?action="
+			var ADDR = "http://192.168.0.112/?"
 
 			function send_cmd(command) {
-				URL_ADDR = ADDR + command;
+				URL_ADDR = ADDR + command + '=' + get_speed();
 				console.log('Send command: ' + URL_ADDR);
 				$.get(URL_ADDR, function(data) {
 					console.log('Received confirmation: ' + data);
@@ -19,6 +19,12 @@
 				console.log("Slider input: " + value);
 				var speed_out = document.getElementById("speed_value");
 				speed_out.innerHTML = value;
+			}
+
+			function get_speed(){
+			    var speed  = document.getElementById("speed_value").innerHTML
+			    console.log("Return speed is " + speed)
+			    return speed
 			}
 		</script>
 		<style>
@@ -61,19 +67,25 @@
 					<tr>
 						<td style="padding-left:130px;" colspan="3"><button
 								style="width:440px;height:150px"
-								onclick="send_cmd('fwd')"></button></td>
+								onclick="send_cmd('forward')"></button></td>
 					</tr>
 					<tr>
-						<td><button style="width:180px;height:190px" onclick="send_cmd('fwd_left')"></button></td>
+						<td><button style="width:180px;height:190px"
+                                    onclick="send_cmd('forward_left')"></button></td>
 						<td rowspan="2"><button style="width:350px;height:370px" onclick="send_cmd('stop')"></button></td>
-						<td><button style="width:180px;height:190px" onclick="send_cmd('fwd_right')"></button></td>
+						<td><button style="width:180px;height:190px"
+                                    onclick="send_cmd('forward_right')"></button></td>
 					</tr>
 					<tr>
-						<td><button style="width:180px;height:220px" onclick="send_cmd('bwd_left')"></button></td>
-						<td><button style="width:180px;height:220px" onclick="send_cmd('bwd_right')"></button></td>
+						<td><button style="width:180px;height:220px"
+                                    onclick="send_cmd('backward_left')"></button></td>
+						<td><button style="width:180px;height:220px"
+                                    onclick="send_cmd('backward_right')"></button></td>
 					</tr>
 					<tr>
-						<td style="padding-left:130px;" colspan="3"><button style="width:440px;height:150px" onclick="send_cmd('bwd')"></button></td>
+						<td style="padding-left:130px;" colspan="3"><button
+                                style="width:440px;height:150px"
+                                onclick="send_cmd('backward')"></button></td>
 					</tr>
 				</table>
 				<table cellpadding="0" cellspacing="0" style="float: right;">
